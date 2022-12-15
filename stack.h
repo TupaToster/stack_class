@@ -2,7 +2,9 @@
 #pragma GCC diagnostic ignored "-Wmultichar"
 #include <stdio.h>
 #include <stdlib.h>
-//#include "flog.h"
+#include <string.h>
+#include "lib/flog.h"
+#include "math.h"
 
 #ifndef NDEBUG
 #define dump(clas) (clas).dumpInside (#clas, __FILE__, __FUNCTION__, __LINE__) ///< NEW_STRUCT dump macros
@@ -12,7 +14,7 @@
 
 
 template<typename ELEM_T>
-class ClassTemplate {
+class Stack {
 
     // constants
     static constexpr unsigned int       CANL      = 0xDEADBEEF; ///< Left cannary of a structure
@@ -34,7 +36,7 @@ class ClassTemplate {
         NULL_data_PTR        = 1<<5, ///< NULL ptr for data
         NULL_data_CAN_L_PTR  = 1<<6, ///< NULL ptr for left  data cannary
         NULL_data_CAN_R_PTR  = 1<<7, ///< NULL ptr for right data cannary
-        WRONG_SIZE           = 1<<8, ///< Something wrong with size var
+        WRONGsize           = 1<<8, ///< Something wrong with size var
         POISONED_ERRCOD      = 1<<9, ///< Errcod variable is poisoned; Ususally means that struct has been destructed
         WRONG_HASH           = 1<<10 ///< Hash was changed without any changes from specified function
     };
@@ -43,6 +45,8 @@ class ClassTemplate {
     unsigned int   hash      = 0;    ///< hash value
     size_t         errCode   = ok;   ///< error code
     ELEM_T*        data      = NULL; ///< Ptr to data
+    size_t         cap       = 0;
+    size_t         size      = 0;
     unsigned int*  dataCanL  = NULL; ///< left cannary of data
     unsigned int*  dataCanR  = NULL; ///< right cannary of data
     unsigned int   canR      = CANR; ///< right cannary of struct
@@ -141,16 +145,53 @@ class ClassTemplate {
         return errCode;
     }
 
+    //Stack part private
+
+    size_t resize (int delta) {
+
+        if (errCheck ()) return errCode;
+
+        verifyHash ();
+
+        if (delta >= 0) {
+
+            data = (ELEM_T*) calloc (cap * sizeof (ELEM_T) * 2 + 2 * sizeof (unsigned int), 1);
+            assert (data != NULL);
+            memcpy (data, dataCanL, cap * sizeof (ELEM_T) + sizeof (unsigned int));
+            cap *= 2;
+        }
+        else if (delta < 0) {
+
+            data = (ELEM_T*) calloc (cap * sizeof (ELEM_T) / 2 + 2 * sizeof (unsigned int), 1);
+            assert (data != NULL);
+            memcpy (data, dataCanL, cap * sizeof (ELEM_T) / 2 + sizeof (unsigned int));
+            cap /= 2;
+        }
+
+        free (dataCanL);
+
+        dataCanL = (unsigned int*) data;
+        data = (ELEM_T*) (dataCanL + 1);
+        dataCanR = (unsigned int*) (data + cap);
+        *dataCanR = CANR;
+
+        countHash ();
+
+        return errCheck ();
+    }
+
     public:
 
-    ClassTemplate (unsigned int _size = 1) :
-        canL (CANL), canR (CANR), hash(0), errCode (ok) {
+    Stack () :
+        canL (CANL), canR (CANR), hash(0), errCode (ok), size (0), cap (4) {
 
-        dataCanL = (unsigned int*) calloc (sizeof (ELEM_T) * _size + 2 * sizeof (unsigned int), 1);
+        dataCanL = (unsigned int*) calloc (sizeof (ELEM_T) * cap + 2 * sizeof (unsigned int), 1);
         assert (dataCanL != NULL);
+
         data = (ELEM_T*) (dataCanL + 1);
         assert (data != NULL);
-        dataCanR = (unsigned int*) (data + _size);
+
+        dataCanR = (unsigned int*) (data + cap);
         assert (dataCanR != NULL);
 
        *dataCanL = CANL;
@@ -247,7 +288,7 @@ class ClassTemplate {
 
         errCheck ();
 
-        flogprintf ("<pre>" "In file %s, function %s, line %llu, ClassTemplate named %s was dumped : <br>",
+        flogprintf ("<pre>" "In file %s, function %s, line %llu, Stack named %s was dumped : <br>",
             fileName, funcName, line, name);
 
         flogprintf ("\t" "Errors : <br>");
@@ -268,6 +309,14 @@ class ClassTemplate {
         else if ( canR      == CANR    ) flogprintf ( "ok)<br>")
         else                             flogprintf ( "NOT_OK)<br>")
 
+                                         flogprintf ( "\t" "cap      = %llu (", cap);
+        if      ( isPoison (&cap)      ) flogprintf ( "POISONED)<br>")
+        else                             flogprintf ( "ok)<br>")
+
+                                         flogprintf ( "\t" "size     = %llu (", size);
+        if      ( isPoison (&size)     ) flogprintf ( "POISONED)<br>")
+        else                             flogprintf ( "ok)<br>")
+
                                          flogprintf ( "\t" "dataCanL = 0x%X (", *dataCanL);
         if      (isPoison (dataCanL)   ) flogprintf ( "POISONED)<br>")
         else if (*dataCanL == CANL     ) flogprintf ( "ok)<br>")
@@ -280,11 +329,55 @@ class ClassTemplate {
 
         if (!isPoison (data) and data != NULL) {
 
-            ClassTemplateGraphDump ();
+            const char* format = getFormat (ELEM_T);
+            for (int i = 0; i < size; i++) {
+
+                flogprintf ( "%*d : <", ceil (log10 (size)), i);
+                flogprintf (format, data[i]);
+                flogprintf ("> <br>");
+            }
         }
+
+
 
         flogprintf ("</pre><hr>\n");
         countHash ();
+    }
+
+    //Stack part public
+
+    size_t push (ELEM_T val) {
+
+        if (errCheck ()) return errCode;
+
+        if (size == cap)
+            if (resize (size - cap)) return errCode;
+
+        data[size] = val;
+        size++;
+
+        countHash ();
+
+        return errCode;
+    }
+
+    ELEM_T pop () {
+
+        ELEM_T retVal = 0;
+        setPoison (&retVal);
+
+        if (errCheck () or size == 0) return retVal;
+
+        if (cap >= 4 and size <= cap * 3 / 8)
+            if (resize (size - cap)) return retVal;
+
+        retVal = data[size];
+        setPoison (&data[size]);
+        size--;
+
+        countHash ();
+
+        return retVal;
     }
 
 };

@@ -11,9 +11,14 @@ extern FILE* logOutf;
 
 void flogIntern (const void* val, const char* varType, const char* varName, size_t varSize, const char* fileName, const char* funcName, size_t line);
 
+const char* getFormatIntern (const char* varType);
+
+#define getFormat(var) getFormatIntern (typeid (var).name ())
+
+
 #define flog(a)                                                                                   \
             if (logOutf == NULL){                                                                 \
-                logOutf = fopen ("logs_out", "a");                                                \
+                logOutf = fopen ("logs_out.html", "a");                                           \
                 setvbuf (logOutf, NULL, _IONBF, 0);                                               \
                 fprintf (logOutf, "----------------------------------------\n"                    \
                 "Logging session at compiled time : %s %s\n\n", __TIME__, __DATE__);              \
@@ -22,7 +27,7 @@ void flogIntern (const void* val, const char* varType, const char* varName, size
 
 #define flogprintf(...)                                                                           \
     {if (logOutf == NULL){                                                                        \
-                logOutf = fopen ("logs_out", "a");                                                \
+                logOutf = fopen ("logs_out.html", "a");                                           \
                 setvbuf (logOutf, NULL, _IONBF, 0);                                               \
                 fprintf (logOutf, "----------------------------------------\n"                    \
                 "Logging session at compiled time : %s %s\n\n", __TIME__, __DATE__);              \

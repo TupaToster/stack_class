@@ -1,11 +1,23 @@
 #include "protos.h"
-#include "class_template.h"
+#include "stack.h"
 
 int main (int argc, char* argv[]) {
 
-    SafeTemplate<double> test;
+    Stack<int> lol;
 
-    unsigned int lol = 0;
-
-    
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    lol.push (19);
+    dump (lol);
+    lol.pop ();
+    lol.pop ();
+    lol.pop ();
+    lol.pop ();
+    dump (lol);
 }
