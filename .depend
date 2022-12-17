@@ -1,0 +1,7 @@
+deasm.o: deasm/deasm.cpp deasm/deasm_head.h \
+ D:\los_projectados\wtfProc\lib\globalization.h \
+ D:\los_projectados\wtfProc\lib\cmd.h \
+ D:\los_projectados\wtfProc\lib\flog.h \
+ D:\los_projectados\wtfProc\lib\stack.h \
+ D:\los_projectados\wtfProc\lib\cmd.h \
+ D:\los_projectados\wtfProc\lib\text.h

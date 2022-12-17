@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lib/flog.h"
+#include "flog.h"
 #include "math.h"
 
 #ifndef NDEBUG
@@ -14,7 +14,7 @@
 
 
 template<typename ELEM_T>
-class Stack {
+struct Stack {
 
     // constants
     static constexpr unsigned int       CANL      = 0xDEADBEEF; ///< Left cannary of a structure
@@ -180,8 +180,6 @@ class Stack {
         return errCheck ();
     }
 
-    public:
-
     Stack () :
         canL (CANL), canR (CANR), hash(0), errCode (ok), size (0), cap (4) {
 
@@ -270,12 +268,13 @@ class Stack {
         setPoison (&canR);
         setPoison (&errCode);
         setPoison (&hash);
+        setPoison (&size);
+        setPoison (&cap);
 
         if (dataCanL != NULL) {
 
             setPoison (dataCanL);
             setPoison (dataCanR);
-            dataCanL++;
             for (; (void*) data < (void*) dataCanR; data++) setPoison (data);
             free (dataCanL);
             setPoison (&dataCanL);
@@ -288,7 +287,7 @@ class Stack {
 
         errCheck ();
 
-        flogprintf ("<pre>" "In file %s, function %s, line %llu, Stack named %s was dumped : <br>",
+        flogprintf ("In file %s, function %s, line %llu, Stack named %s was dumped : <br>",
             fileName, funcName, line, name);
 
         flogprintf ("\t" "Errors : <br>");
@@ -329,18 +328,18 @@ class Stack {
 
         if (!isPoison (data) and data != NULL) {
 
-            const char* format = getFormat (ELEM_T);
             for (int i = 0; i < size; i++) {
 
-                flogprintf ( "%*d : <", ceil (log10 (size)), i);
-                flogprintf (format, data[i]);
-                flogprintf ("> <br>");
+                flogprintf ( "%*d : ", ceil (log10 (size)), i);
+                //flogprintf (getFormat (ELEM_T), data[i]);
+                flogprintf ("name : \"%s\", ip : <%d>;", data[i].name, data[i].ip);
+                flogprintf (" <br>");
             }
         }
 
 
 
-        flogprintf ("</pre><hr>\n");
+        flogprintf ("<hr>\n");
         countHash ();
     }
 
@@ -378,6 +377,30 @@ class Stack {
         countHash ();
 
         return retVal;
+    }
+
+    void TagDTOR () {
+
+        setPoison (&canL);
+        setPoison (&canR);
+        setPoison (&errCode);
+        setPoison (&hash);
+        setPoison (&size);
+        setPoison (&cap);
+
+        if (dataCanL != NULL) {
+
+            setPoison (dataCanL);
+            setPoison (dataCanR);
+            for (; (void*) data < (void*) dataCanR; data++) {
+                data.DTOR();
+                setPoison (data);
+            }
+            free (dataCanL);
+            setPoison (&dataCanL);
+            setPoison (&data);
+            setPoison (&dataCanR);
+        }
     }
 
 };
