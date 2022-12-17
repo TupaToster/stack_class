@@ -30,6 +30,30 @@
 
 typedef double elem_t;
 
+#include <string.h>
+#include <assert.h>
+
+struct Tag {
+
+    char* name = NULL;
+    int ip = -1;
+
+    Tag (const char* _name, elem_t _ip) : ip (_ip) {
+
+        assert (_name != NULL);
+        name = strdup (_name);
+        assert (name != NULL);
+    }
+
+    void DTOR () {
+
+        for (char* i = name; *i != '\0'; i++) *i = '\0';
+        free (name);
+        name = NULL;
+        ip = -1;
+    }
+};
+
 #else ///< Template for auto code gen starts here
 
 #define DEF_JMP(name, num, arg, condition)\
@@ -79,7 +103,7 @@ DEF_CMD (out, 6, 0, {
 
 DEF_CMD (dump, 7, 0, {
 
-    ProcDump (cpu);
+    dump (*this);
 })
 
 DEF_CMD (hlt, 0, 0, {
@@ -108,7 +132,7 @@ DEF_JMP (jne, 15, IP_ARG, !cmp (fst, scd))
 
 DEF_CMD (call, 16, IP_ARG, {
 
-    funcIp.push (cpu->ip)
+    funcIp.push (ip);
     ip = (size_t) *cmdArg;
 })
 

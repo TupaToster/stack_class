@@ -13,27 +13,6 @@
 
 extern int Errors;
 
-struct Tag {
-
-    char* name = NULL;
-    int ip = -1;
-
-    Tag (const char* _name, elem_t _ip) : ip (_ip) {
-
-        assert (_name != NULL);
-        name = strdup (_name);
-        assert (name != NULL);
-    }
-
-    void DTOR () {
-
-        for (char* i = name; *i != '\0'; i++) *i = '\0';
-        free (name);
-        name = NULL;
-        ip = -1;
-    }
-};
-
 char* handleComLine (int argc, char* argv[], char** outFileName);
 
 void writeCode (Text* codeFile, char* outStr, Stack<Tag>* tags, size_t* Ip);

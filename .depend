@@ -1,7 +1,14 @@
-deasm.o: deasm/deasm.cpp deasm/deasm_head.h \
- D:\los_projectados\wtfProc\lib\globalization.h \
- D:\los_projectados\wtfProc\lib\cmd.h \
- D:\los_projectados\wtfProc\lib\flog.h \
- D:\los_projectados\wtfProc\lib\stack.h \
- D:\los_projectados\wtfProc\lib\cmd.h \
- D:\los_projectados\wtfProc\lib\text.h
+flog.o: lib/flog.cpp lib/flog.h
+text.o: lib/text.cpp lib/Text.h
+proc.o: processor/proc.cpp processor/softCPU.h \
+ processor/../lib/globalization.h D:\los_projectados\wtfProc\lib\cmd.h \
+ processor/../lib/cmd.h processor/../lib/stack.h processor/../lib/flog.h \
+ processor/../lib/cmd.h processor/../lib/text.h
+asm_funcs.o: asm/asm_funcs.cpp asm/asm_head.h asm/../lib/globalization.h \
+ D:\los_projectados\wtfProc\lib\cmd.h asm/../lib/text.h \
+ asm/../lib/stack.h asm/../lib/flog.h asm/../lib/cmd.h asm/../lib/flog.h \
+ asm/../lib/cmd.h
+asm.o: asm/asm.cpp asm/asm_head.h asm/../lib/globalization.h \
+ D:\los_projectados\wtfProc\lib\cmd.h asm/../lib/text.h \
+ asm/../lib/stack.h asm/../lib/flog.h asm/../lib/cmd.h asm/../lib/flog.h \
+ asm/../lib/cmd.h

@@ -59,10 +59,10 @@ struct CPU {
         }
     }
 
-    void CPUdumpInside (const char* name, const char* filename, const char* funcName, size_t line) {
+    void dumpInside (const char* name, const char* filename, const char* funcName, size_t line) {
 
         flogprintf ("<pre>" "In file %s, function %s, line %llu, CPU named %s was dumped : <br>",
-            fileName, funcName, line, name);
+            filename, funcName, line, name);
 
         flogprintf ("\t" "codeSize = %llu (", codeSize);
         if (isPoison (&codeSize)) flogprintf ("POISONED)<br>")
@@ -170,8 +170,8 @@ struct CPU {
 
         assert (code != NULL);
 
-        assert (code[0] != signa[0] or code[1] != signa[1]);
-        assert (code[2] != signa[2] or code[3] != signa[3]);
+        assert (code[0] == signa[0] and code[1] == signa[1]);
+        assert (code[2] == signa[2] and code[3] == signa[3]);
 
         ip = 4;
     }
@@ -183,27 +183,31 @@ struct CPU {
 
     void runCode () {
 
+        printf ("lol");
         ELEM_T* cmdArg = NULL;
 
-        switch ((cpu->code[cpu->ip++] % MASK_CMD)) {
+        while (ip < codeSize) {
 
-            #define DEF_CMD(name, num, arg, code)\
-                case CMD_##name:\
-                    cmdArg = getArg (arg);\
-                    assert (cmdArg != NULL);\
-                    code\
+            switch ((code[ip++] & MASK_CMD)) {
+
+                #define DEF_CMD(name, num, arg, code)\
+                    case CMD_##name:\
+                        cmdArg = getArg (arg);\
+                        assert (cmdArg != NULL);\
+                        code\
+                    break;
+
+                #include "../lib/cmd.h"
+
+                #undef DEF_CMD
+
+                default:
+
+                    printf ("Wrong command");
+                    dump (*this);
+                    exit (-1);
                 break;
-
-            #include "../lib/cmd.h"
-
-            #undef DEF_CMD
-
-            default:
-
-                printf ("Wrong command");
-                dump (*this);
-                exit (-1);
-            break;
+            }
         }
     }
 
@@ -235,7 +239,7 @@ struct CPU {
             ip += sizeof (ELEM_T);
         }
 
-        if (command & MAKS_RAM) {
+        if (command & MASK_RAM) {
 
             size_t ind = (size_t) *retVal;
             *retVal -= immConst;

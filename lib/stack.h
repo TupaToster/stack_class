@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <type_traits>
 #include "flog.h"
 #include "math.h"
+#include "cmd.h"
 
 #ifndef NDEBUG
 #define dump(clas) (clas).dumpInside (#clas, __FILE__, __FUNCTION__, __LINE__) ///< NEW_STRUCT dump macros
@@ -331,8 +333,8 @@ struct Stack {
             for (int i = 0; i < size; i++) {
 
                 flogprintf ( "%*d : ", ceil (log10 (size)), i);
-                //flogprintf (getFormat (ELEM_T), data[i]);
-                flogprintf ("name : \"%s\", ip : <%d>;", data[i].name, data[i].ip);
+                if constexpr (std::is_same<ELEM_T, Tag>::value) flogprintf ("name : \"%s\", ip : <%d>;", data[i].name, data[i].ip)
+                else flogprintf (getFormat (ELEM_T), data[i]);
                 flogprintf (" <br>");
             }
         }

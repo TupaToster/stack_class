@@ -1,7 +1,6 @@
 push 1
 push 227
 add
-hui:
 pop rax
 push rax
 push rax
@@ -9,5 +8,4 @@ mult
 pop [1]
 push [1]
 out
-jmp :hui
 hlt
