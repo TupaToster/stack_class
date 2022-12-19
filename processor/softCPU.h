@@ -28,10 +28,10 @@ struct CPU {
     static constexpr int                RAM_SIZE = 121;
     //end of constants
 
-    CPU () : code (NULL), regs ({0, 0, 0, 0, 0}), ip (0) {
+    CPU () : code (NULL), ip (0), codeSize (0) {
 
-        ram = (ELEM_T*) calloc (RAM_SIZE, sizeof (ELEM_T));
-        assert (ram != NULL);
+        memset (regs, 0, REG_SIZE * sizeof (char));
+        memset (ram, 0, RAM_SIZE * sizeof (char));
     }
 
     char*         code     = NULL; ///< String of binary code
@@ -40,7 +40,7 @@ struct CPU {
     int           ip       = 0;    ///< Instruction pointer
     Stack<ELEM_T> stk;             ///< Stack of ELEM_T for work of process
     Stack<int>    funcIp;          ///< Stack of ip for function calls
-    ELEM_T*       ram      = NULL; ///< Array that represents RAM
+    ELEM_T        ram[RAM_SIZE] = {0}; ///< Array that represents RAM
 
     template<typename varType>
     void setPoison (varType* var) {
@@ -82,7 +82,7 @@ struct CPU {
         flogprintf ("ram[%d] = { ", RAM_SIZE);
         for (int i = 0; i < RAM_SIZE; i++) {
 
-            flogprintf ( getFormat (regs[i]), regs[i]);
+            flogprintf ( getFormat (ram[i]), ram[i]);
             if (i != RAM_SIZE - 1) flogprintf (", ");
         }
         flogprintf (" }<br>");
@@ -90,7 +90,7 @@ struct CPU {
         dump (stk);
         dump (funcIp);
 
-        flogprintf ("</pre><hr>\n");
+        flogprintf ("</pre>\n");
 
     }
 
@@ -176,23 +176,24 @@ struct CPU {
         ip = 4;
     }
 
-    cmp (const ELEM_T a, const ELEM_T b) {
+    bool cmp (const ELEM_T a, const ELEM_T b) {
 
         return fabs (a - b) < EPS;
     }
 
     void runCode () {
 
-        printf ("lol");
+        // printf ("lol");
         ELEM_T* cmdArg = NULL;
 
         while (ip < codeSize) {
 
-            switch ((code[ip++] & MASK_CMD)) {
+            // printf ("%d ", ip);
+            switch (code[ip++] & MASK_CMD) {
 
                 #define DEF_CMD(name, num, arg, code)\
                     case CMD_##name:\
-                        cmdArg = getArg (arg);\
+                        if (arg != 0) cmdArg = getArg (arg);\
                         assert (cmdArg != NULL);\
                         code\
                     break;
@@ -205,18 +206,18 @@ struct CPU {
 
                     printf ("Wrong command");
                     dump (*this);
-                    exit (-1);
+                    assert (0);
                 break;
             }
         }
     }
+
 
     ELEM_T* getArg (int argType) {
 
         assert (code != NULL);
         assert (ram != NULL);
         assert (regs != NULL);
-
 
         char command = code[ip - 1];
 
@@ -232,7 +233,7 @@ struct CPU {
             ip += sizeof (char);
         }
 
-        if (command & MASK_IMM or argType == 3) {
+        if ((command & MASK_IMM) or (argType == IP_ARG)) {
 
             *retVal += *(ELEM_T*)(code + ip);
             immConst = *(ELEM_T*)(code + ip);
@@ -241,7 +242,7 @@ struct CPU {
 
         if (command & MASK_RAM) {
 
-            size_t ind = (size_t) *retVal;
+            int ind = *retVal;
             *retVal -= immConst;
             retVal = ram + ind;
         }
@@ -259,6 +260,5 @@ struct CPU {
         funcIp.DTOR ();
         for (int i = 0; i < REG_SIZE; i++) setPoison (regs + i);
         free (code);
-        free (ram);
     }
 };

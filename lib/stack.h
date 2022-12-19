@@ -162,7 +162,7 @@ struct Stack {
             memcpy (data, dataCanL, cap * sizeof (ELEM_T) + sizeof (unsigned int));
             cap *= 2;
         }
-        else if (delta < 0) {
+        else if (size >= 4 and delta < 0 and size <= cap * 3 / 8) {
 
             data = (ELEM_T*) calloc (cap * sizeof (ELEM_T) / 2 + 2 * sizeof (unsigned int), 1);
             assert (data != NULL);
@@ -369,12 +369,15 @@ struct Stack {
 
         if (errCheck () or size == 0) return retVal;
 
-        if (cap >= 4 and size <= cap * 3 / 8)
-            if (resize (size - cap)) return retVal;
-
-        retVal = data[size];
+        retVal = data[size - 1];
         setPoison (&data[size]);
         size--;
+
+        if (size >= 4 and size <= cap * 3 / 8)
+            if (resize (size - cap)) {
+                assert (0);
+                return retVal;
+            }
 
         countHash ();
 

@@ -136,8 +136,7 @@ void handleArg (const Text* code, const int line, char* outStr, unsigned char cm
 
     if (arg1[it1] == 'r' and arg1[it1 + 2] == 'x')
         printReg (Ip, commandIp, outStr, &cmdNum, arg1 + it1);
-
-    if (sscanf (arg1 + it1, getFormat (elem_t), &value) == 1)
+    else if (sscanf (arg1 + it1, getFormat (elem_t), &value) == 1)
         printImm (Ip, commandIp, outStr, &cmdNum, value);
 
     if (arg2[0] == 'r' and arg2[2] == 'x') {
@@ -151,8 +150,7 @@ void handleArg (const Text* code, const int line, char* outStr, unsigned char cm
 
         printReg (Ip, commandIp, outStr, &cmdNum, arg2 + 1);
     }
-
-    if (sscanf (arg2, getFormat (elem_t), &value) == 1) {
+    else if (sscanf (arg2, getFormat (elem_t), &value) == 1) {
 
         if (cmdNum & MASK_IMM) {
 
@@ -186,8 +184,7 @@ void printImm (size_t *Ip, const size_t commandIp, char* outStr, unsigned char* 
     if (outStr != NULL) {
 
         outStr[commandIp] = *cmdNum;
-        if (*cmdNum & MASK_RAM) *(int*) (outStr + *Ip) = (int) value;
-        else  *(elem_t*) (outStr + *Ip) = value;
+        *(elem_t*) (outStr + *Ip) = value;
     }
 
     *Ip += sizeof (elem_t);
@@ -201,7 +198,7 @@ void printTag (Stack<Tag>* tags, char* name, char* outStr, size_t* Ip, size_t co
 
         if (strcmp (tags->data[i].name, name) == 0) {
 
-            if (outStr != NULL) *(int*)(outStr + *Ip) = tags->data[i].ip;
+            if (outStr != NULL) *(elem_t*)(outStr + *Ip) = (elem_t) tags->data[i].ip;
             *Ip += sizeof (elem_t);
             return;
         }
@@ -219,5 +216,4 @@ void addTag (Stack<Tag>* tags, const char* name, size_t* Ip) {
 
     tags->push (Tag (name, (int)*Ip));
     tags->data[tags->size - 1].name[strlen (tags->data[tags->size - 1].name) - 1] = '\0';
-    dump (*tags);
 }

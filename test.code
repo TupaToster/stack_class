@@ -7,5 +7,17 @@ push rax
 mult
 pop [1]
 push [1]
+pop [1]
+push [1]
 out
+call :hui
 hlt
+hui:
+push 0
+pop rax
+push [rax + 1]
+push [rax + 1]
+sub
+dump
+out
+ret

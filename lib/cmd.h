@@ -64,7 +64,7 @@ struct Tag {
         ELEM_T fst = POP;                 \
         if (condition) {                  \
                                           \
-            ip = (int) *cmdArg;      \
+            ip = (size_t) *cmdArg;           \
         }                                 \
     })
 
