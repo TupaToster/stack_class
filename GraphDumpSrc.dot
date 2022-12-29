@@ -1,0 +1,16 @@
+digraph List_0 {
+	graph [dpi = 100];
+	bgcolor = "#252525"
+	rankdir = TB
+	"Nod_0" [shape = "Mrecord", style = "filled", fillcolor = "#1ed5f2", label = "{ <prev> Prev = 0000000000000000 | Current = 00000132ee971604 | Type = BLANK | Value = 0 | {next[4] : | { 0 | 00000132ee971730 }  | { 1 | 00000132ee9717d0 }  | { 2 | 00000132ee971870 }  | { 3 | 00000132ee971910 }  } | <next> } "]
+	"Nod_1" [shape = "Mrecord", style = "filled", fillcolor = "#1ed5f2", label = "{ <prev> Prev = 00000132ee971604 | Current = 00000132ee971730 | Type = BLANK | Value = 0 | {next[0] : |  } | <next> } "]
+	"Nod_2" [shape = "Mrecord", style = "filled", fillcolor = "#1ed5f2", label = "{ <prev> Prev = 00000132ee971604 | Current = 00000132ee9717d0 | Type = BLANK | Value = 0 | {next[0] : |  } | <next> } "]
+	"Nod_3" [shape = "Mrecord", style = "filled", fillcolor = "#1ed5f2", label = "{ <prev> Prev = 00000132ee971604 | Current = 00000132ee971870 | Type = BLANK | Value = 0 | {next[0] : |  } | <next> } "]
+	"Nod_4" [shape = "Mrecord", style = "filled", fillcolor = "#1ed5f2", label = "{ <prev> Prev = 00000132ee971604 | Current = 00000132ee971910 | Type = BLANK | Value = 0 | {next[0] : |  } | <next> } "]
+	{ rank = same;  Nod_0; }
+	{ rank = same;  Nod_1;  Nod_2;  Nod_3;  Nod_4; }
+	"Nod_0":next -> "Nod_1" [color = "#36f70f"];
+	"Nod_0":next -> "Nod_2" [color = "#36f70f"];
+	"Nod_0":next -> "Nod_3" [color = "#36f70f"];
+	"Nod_0":next -> "Nod_4" [color = "#36f70f"];
+}

@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <math.h>
 #include "../lib/globalization.h"
-#include "../lib/cmd.h"
 #include "../lib/stack.h"
 #include "../lib/text.h"
 #include "../lib/cmd.h"
@@ -24,8 +23,6 @@ struct CPU {
     static constexpr unsigned int       POISON4   = 0xBADC0FEE; ///< 4 byte Poison
     static constexpr unsigned long long POISON8   = 0xBADC0FEEF04DED32; ///< 8 byte Poison
     static constexpr double             EPS = 0.001;
-    static constexpr int                REG_SIZE = 5;
-    static constexpr int                RAM_SIZE = 121;
     //end of constants
 
     CPU () : code (NULL), ip (0), codeSize (0) {

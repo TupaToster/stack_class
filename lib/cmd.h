@@ -30,6 +30,9 @@
 
 typedef double elem_t;
 
+#define REG_SIZE 5
+#define RAM_SIZE 121
+
 #include <string.h>
 #include <assert.h>
 
